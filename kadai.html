@@ -1,0 +1,303 @@
+<!DOCTYPE html>
+<html lang="ja">
+
+
+<head>
+    <meta charset="UTF-8">
+    <!-- レスポンシブ対応 -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>小遣いメモ</title>
+    <link rel="stylesheet" href="css/main.css">
+</head>
+
+
+<body>
+    <header>
+        <h1>小遣いメモ</h1>
+    </header>
+
+    <main>
+        <div>
+            <p>チャージ</p>
+            <input id="charge">
+            <p>使用額計</p>
+            <input id="sum_price"></input>
+            <!-- ↑ここに合計結果を主力させる -->
+        </div>
+
+
+
+        <table class="main_list" align="center">
+            <tr>
+                <th>曜日</th>
+                <th colspan="2">金額</th>
+            </tr>
+            <!-- 月曜日 -->
+            <tr>
+                <th>月</th>
+                <td><input type="text" id="input_m">円</td>
+            </tr>
+            <!-- 火曜日 -->
+            <tr>
+                <th>火</th>
+                <td><input type="text" id="input_t">円</td>
+            </tr>
+            <!-- 水曜日 -->
+            <tr>
+                <th>水</th>
+                <td><input type="text" id="input_w">円</td>
+            </tr>
+            <!-- 木曜日 -->
+            <tr>
+                <th>木</th>
+                <td><input type="text" id="input_th">円</td>
+            </tr>
+            <!-- 金曜日 -->
+            <tr>
+                <th>金</th>
+                <td><input type="text" id="input_f">円</td>
+            </tr>
+
+
+        </table>
+
+        <!-- 各曜日に入力を指定
+        <input type="text" id="input_m">
+        <textarea id="text_area"></textarea> -->
+        <div>
+            <ul>
+                <li>
+                    <button id="save">記録</button>
+                </li>
+                <li>
+                    <button id="clear">リセット</button>
+                </li>
+            </ul>
+        </div>
+    </main>
+
+    <!-- chat入力箇所 -->
+    <div　class="chat">
+        <ul>
+            <li>
+                <label for="name">name</label>
+                <input type="text" id="name"><br />
+            </li>
+            <li>
+                <textarea name="" id="text" cols="30" rows="10"></textarea>
+            </li>
+            <li>
+                <button id="send">send</button>
+            </li>
+        </ul>
+    </div>
+
+    <!-- データ出力場所 -->
+    <div>
+        <ul id="output"></ul>
+    </div>
+
+    <!-- <footer>
+        <small>G's</small>
+    </footer> -->
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    <!-- firebaseのコード貼り付け -->
+    <!-- The core Firebase JS SDK is always required and must be listed first -->
+    <script src="https://www.gstatic.com/firebasejs/8.1.1/firebase.js"></script>
+
+    <!-- TODO: Add SDKs for Firebase products that you want to use
+     https://firebase.google.com/docs/web/setup#available-libraries -->
+
+    <script>
+        // Your web app's Firebase configuration
+        var firebaseConfig = {
+            apiKey:
+                authDomain: "kadai-chat.firebaseapp.com",
+            databaseURL: "https://kadai-chat.firebaseio.com",
+            projectId: "kadai-chat",
+            storageBucket: "kadai-chat.appspot.com",
+            messagingSenderId: "580706643086",
+            appId: "1:580706643086:web:3687faba6171306530addf"
+        };
+        // Initialize Firebase
+        firebase.initializeApp(firebaseConfig);
+        // リアルタイム通信の準備
+        const db = firebase.firestore().collection("kadai-chat")
+    </script>
+
+    <script>
+        // 日時をいい感じの形式にする関数
+        function convertFromFirestoreTimestampToDatetime(timestamp) {
+            const _d = timestamp ? new Date(timestamp * 1000) : new Date();
+            const Y = _d.getFullYear();
+            const m = (_d.getMonth() + 1).toString().padStart(2, '0');
+            const d = _d.getDate().toString().padStart(2, '0');
+            const H = _d.getHours().toString().padStart(2, '0');
+            const i = _d.getMinutes().toString().padStart(2, '0');
+            const s = _d.getSeconds().toString().padStart(2, '0');
+            return `${Y}/${m}/${d} ${H}:${i}:${s}`;
+        }
+        //     //saveボタンでメッセージ送信
+        //     $("#save").on("click", function () {
+        //         const memory = {
+        //             memory: $("#sum_price").val(),
+        //             time: firebase.firestore.FieldValue.serverTimestamp(),
+        //         };
+
+        //         db.add(memory);
+        //     });
+        //     //データをリアルタイムで取得する処理
+        //     db.orderBy('time', 'desc').onSnapshot(function (querySnapshot) {
+        //         // まずはconsole.log()で出力してデータの形を確認！
+        //         const dataArray = [];
+        //         querySnapshot.docs.forEach(function (doc) {
+        //             const data = {
+        //                 id: doc.id,
+        //                 data: doc.data(),
+        //             };
+        //             dataArray.push(data);
+        //         });
+        //         console.log(dataArray);
+
+        //         const tagArray = [];
+
+        //         dataArray.forEach(function (data) {
+        //             const tag = `
+        //   <li id="${data.id}">
+        //   <p>${data.data.memory}</p>
+        //   <p>${convertFromFirestoreTimestampToDatetime(data.data.time.seconds)}</p>
+        //   </li>
+        //   `;
+        //             tagArray.push(tag);
+        //             $("#output").html(tagArray);
+        //         });
+        //     });
+
+
+
+        // SENDボタンでメッセージ送信
+        $("#send").on("click", function () {
+            const data = {
+                name: $("#name").val(),
+                text: $("#text").val(),
+                time: firebase.firestore.FieldValue.serverTimestamp(),
+            };
+
+            db.add(data);
+            $("#text").val("");
+
+        });
+        // データをリアルタイムに取得する処理
+        db.orderBy('time', 'desc').onSnapshot(function (querySnapshot) {
+            // まずはconsole.log()で出力してデータの形を確認！
+            const dataArray = [];
+            querySnapshot.docs.forEach(function (doc) {
+                const data = {
+                    id: doc.id,
+                    data: doc.data(),
+                };
+                dataArray.push(data);
+            });
+            console.log(dataArray);
+
+            const tagArray = [];
+
+            dataArray.forEach(function (data) {
+                const tag = `
+      <li id="${data.id}">
+      <p>${data.data.name}</p>
+      <p>${data.data.text}</p>
+      <p>${convertFromFirestoreTimestampToDatetime(data.data.time.seconds)}</p>
+      </li>
+      `;
+                tagArray.push(tag);
+                $("#output").html(tagArray);
+            });
+        });
+    </script>
+
+    <script>
+        $(function () {
+            //１．saveクリックイベント
+            $("#save").on("click", function () {
+                // console.log(12345)
+                var charge = $("#charge").val();
+                var title_m = $("#input_m").val();
+                var title_t = $("#input_t").val();
+                var title_w = $("#input_w").val();
+                var title_th = $("#input_th").val();
+                var title_f = $("#input_f").val();
+                // var text = $("#text_area").val();
+                // objの中身を指定
+                var obj = {
+                    "charge": charge,
+                    "title_m": title_m,
+                    "title_t": title_t,
+                    "title_w": title_w,
+                    "title_th": title_th,
+                    "title_f": title_f
+                    // "text": text
+                };
+                var json = JSON.stringify(obj);
+                localStorage.setItem("memo02", json);
+            });
+
+
+            //2．CLEARクリックイベント
+            $("#clear").on("click", function () {
+                localStorage.removeItem("memo02");
+                $("#charge").val("");
+                $("#input_m").val("");
+                $("#input_t").val("");
+                $("#input_w").val("");
+                $("#input_th").val("");
+                $("#input_f").val("");
+                // $("#text_area").val("");
+            });
+
+            //３．ページ読み込み：保存データ取得表示
+            if (localStorage.getItem("memo02")) {// 値が保存されていれば
+                var json_get = localStorage.getItem("memo02");// データを取得
+                var obj_get = JSON.parse(json_get);
+                $("#charge").val(obj_get.charge);
+                $("#input_m").val(obj_get.title_m);
+                $("#input_t").val(obj_get.title_t);
+                $("#input_w").val(obj_get.title_w);
+                $("#input_th").val(obj_get.title_th);
+                $("#input_f").val(obj_get.title_f);
+
+                // $("#text_area").val(obj_get.text);
+            }
+
+            // ４．残高表示　チャージマイナス各曜日合計
+            //ボタンの要素を取得
+            const button = document.getElementById("save");
+            //ボタンをクリックした時の処理
+            button.addEventListener("click", function () {
+                // e.preventDefault();
+
+
+                //チャージ金額、各曜日入力金額取得
+                const textform0 = document.getElementById("charge").value
+                const textform1 = document.getElementById("input_m").value
+                const textform2 = document.getElementById("input_t").value
+                const textform3 = document.getElementById("input_w").value
+                const textform4 = document.getElementById("input_th").value
+                const textform5 = document.getElementById("input_f").value
+
+                //数値を足す
+                const sum = parseInt(textform0, 10) - parseInt(textform1, 10) - parseInt(textform2, 10) - parseInt(textform3, 10) - parseInt(textform4, 10) - parseInt(textform5, 10);
+                //足し算結果を表示
+                const resultform = document.getElementById("sum_price");
+                resultform.value = sum;
+                console.log(sum_price);
+            });
+        });
+
+
+    </script>
+
+
+</body>
+
+</html>
