@@ -1,5 +1,5 @@
 ##　小遣いメモCHATver ##
-
+https://toshinori54.github.io/04_20_memochat/.
 
 
 ## プロダクトの紹介 ##
